@@ -16,6 +16,8 @@ data Expr = Num Int        -- Constantes numéricas
           | Lam String Ty Expr -- Função Lambda
           | App Expr Expr  -- Aplicação de função
           | Tuple Expr Expr -- Tuplas
+          | Multi Expr Expr
+          
           deriving (Show, Eq)
 
 -- Definição de tipos adicionais, como o tipo Ty
@@ -40,7 +42,8 @@ data Token = TokenTrue
            | TokenArrow 
            | TokenLParen       -- Parênteses para tuplas
            | TokenRParen
-           | TokenComma        -- Vírgula para tuplas
+           | TokenComma  
+           | TokenMulti      -- Vírgula para tuplas
            deriving Show
 
 lexer :: String -> [Token]
@@ -52,10 +55,12 @@ lexer ('=':'=':cs) = TokenEq : lexer cs
 lexer ('(':cs) = TokenLParen : lexer cs  -- Para o parêntese esquerdo
 lexer (')':cs) = TokenRParen : lexer cs  -- Para o parêntese direito
 lexer (',':cs) = TokenComma : lexer cs   -- Para a vírgula
+lexer ('*':cs) = TokenMulti : lexer cs
 lexer (c:cs) 
     | isSpace c = lexer cs
     | isAlpha c = lexerKW (c:cs)
     | isDigit c = lexerNum (c:cs)
+   
 
 lexerNum :: String -> [Token]
 lexerNum cs = case span isDigit cs of 
@@ -69,4 +74,4 @@ lexerKW cs = case span isAlpha cs of
     ("if", rest) -> TokenIf : lexer rest
     ("then", rest) -> TokenThen : lexer rest
     ("else", rest) -> TokenElse : lexer rest
-    (var, rest) -> TokenVar var : lexer rest
+    -- (var, rest) -> TokenVar var : lexer rest

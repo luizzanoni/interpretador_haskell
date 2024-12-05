@@ -1,0 +1,30 @@
+happy --ghc Parser.y
+
+ghc -o Tfinal Main.hs Lexer.hs Parser.hs Interpreter.hs TypeChecker.hs
+
+
+Soma:
+
+Echo "5 + 3" | ./Tfinal  
+
+Subtração:
+
+Echo "5 - 3" | ./Tfinal  
+
+Multiplicação:
+
+ Echo "5 * 3" | ./Tfinal  
+
+Igualdade:
+
+Echo "555==6" | ./Tfinal
+
+if - else :
+
+Echo "if true then 1 else 0" | ./Tfinal
+
+Tuplas simples:
+
+Echo "(123343,6)" | ./Tfinal
+
+

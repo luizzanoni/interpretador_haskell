@@ -15,6 +15,7 @@ import Lexer
   false         { TokenFalse }
   num           { TokenNum $$ }
   '+'           { TokenAdd }
+  '-'           { TokenSub }
   and           { TokenAnd }
   "=="          { TokenEq }
   if            { TokenIf }
@@ -23,11 +24,15 @@ import Lexer
   '('           { TokenLParen }
   ')'           { TokenRParen }
   ','           { TokenComma }
+  '*'           { TokenMulti }
+  --  '\\'         { TokenLam }
+    -- var          { TokenVar $$ }
 
 %nonassoc if then else 
 %left "=="
 %left '+' and
-
+%left '*'
+%left '-'
 %%
 
 Exp : true                        { BTrue }
@@ -36,8 +41,11 @@ Exp : true                        { BTrue }
     | Exp '+' Exp                 { Add $1 $3 }
     | Exp and Exp                 { And $1 $3 }
     | Exp "==" Exp                { Eq $1 $3 }
+    | Exp '-' Exp                 { Sub $1 $3 }
     | if Exp then Exp else Exp    { If $2 $4 $6 }
-    | '(' Exp ',' Exp ')'         { Tuple $2 $4 }  -- Regra para tupla
+    | '(' Exp ',' Exp ')'         { Tuple $2 $4 }  -- Regra para tuplas
+    | Exp '*' Exp                 { Multi $1 $3 }
+    -- | Exp : TokenLam Var Ty Exp { Lam $2 $3 $4 }
 
 {
 parseError :: [Token] -> a 
