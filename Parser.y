@@ -2,13 +2,15 @@
 module Parser where 
 
 import Lexer
+
 }
 
-%name parser 
-%tokentype { Token }
-%error { parseError } 
 
-%token 
+%name parser
+%tokentype { Token }
+%error { parseError }
+
+%token
   true          { TokenTrue }
   false         { TokenFalse }
   num           { TokenNum $$ }
@@ -18,12 +20,15 @@ import Lexer
   if            { TokenIf }
   then          { TokenThen }
   else          { TokenElse }
+  '('           { TokenLParen }
+  ')'           { TokenRParen }
+  ','           { TokenComma }
 
 %nonassoc if then else 
 %left "=="
 %left '+' and
 
-%% 
+%%
 
 Exp : true                        { BTrue }
     | false                       { BFalse }
@@ -32,6 +37,7 @@ Exp : true                        { BTrue }
     | Exp and Exp                 { And $1 $3 }
     | Exp "==" Exp                { Eq $1 $3 }
     | if Exp then Exp else Exp    { If $2 $4 $6 }
+    | '(' Exp ',' Exp ')'         { Tuple $2 $4 }  -- Regra para tupla
 
 {
 parseError :: [Token] -> a 

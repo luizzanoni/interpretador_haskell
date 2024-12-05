@@ -1,28 +1,55 @@
 module Interpreter where
 
-import Lexer
+import Lexer 
 
-eval :: Expr -> Expr
-eval (Num n) = Num n
-eval BTrue = BTrue
-eval BFalse = BFalse
-eval (Add e1 e2) = case (eval e1, eval e2) of
-                     (Num n1, Num n2) -> Num (n1 + n2)
-                     _ -> error "Erro de tipo em Add"
-eval (And e1 e2) = case (eval e1, eval e2) of
-                     (BTrue, BTrue) -> BTrue
-                     (BTrue, BFalse) -> BFalse
-                     (BFalse, _) -> BFalse
-                     _ -> error "Erro de tipo em And"
-eval (Eq e1 e2) = case (eval e1, eval e2) of
-                    (Num n1, Num n2) -> if n1 == n2 then BTrue else BFalse
-                    _ -> error "Erro de tipo em Eq"
-eval (If e e1 e2) = case eval e of
-                      BTrue -> eval e1
-                      BFalse -> eval e2
-                      _ -> error "Erro de tipo em If"
-eval (List xs) = List (map eval xs)
-eval (Cons h t) = case eval t of
-                    List ts -> List (eval h : ts)
-                    _ -> error "Cauda de uma lista deve ser uma lista"
-eval e = e
+isValue :: Expr -> Bool
+isValue BTrue = True 
+isValue BFalse = True 
+isValue (Num _) = True 
+isValue (Lam _ _ _) = True
+isValue (Tuple _ _) = True  -- Reconhecendo tuplas como valores
+isValue _ = False 
+
+subst :: String -> Expr -> Expr -> Expr
+subst x n b@(Var v) = if v == x then 
+                        n 
+                      else 
+                        b 
+subst x n (Add e1 e2) = Add (subst x n e1) (subst x n e2)
+subst x n (Sub e1 e2) = Sub (subst x n e1) (subst x n e2)  -- Substituição para a operação de subtração
+subst x n (And e1 e2) = And (subst x n e1) (subst x n e2)
+subst x n (Eq e1 e2) = Eq (subst x n e1) (subst x n e2)
+subst x n (If e e1 e2) = If (subst x n e) (subst x n e1) (subst x n e2)
+subst x n (Lam v t b) = Lam v t (subst x n b)
+subst x n (App e1 e2) = App (subst x n e1) (subst x n e2)
+subst x n (Tuple e1 e2) = Tuple (subst x n e1) (subst x n e2)  -- Substituição para tuplas
+subst _ _ e = e
+
+step :: Expr -> Expr 
+step (Add (Num n1) (Num n2)) = Num (n1 + n2)
+step (Sub (Num n1) (Num n2)) = Num (n1 - n2)  -- Passo para a operação de subtração
+step (Add (Num nv) e2) = Add (Num nv) (step e2) 
+step (Sub (Num nv) e2) = Sub (Num nv) (step e2)  -- Passo para a operação de subtração
+step (Add e1 e2) = Add (step e1) e2 
+step (Sub e1 e2) = Sub (step e1) e2  -- Passo para subtração
+step (And BFalse e) = BFalse 
+step (And BTrue e) = e 
+step (And e1 e2) = And (step e1) e2 
+
+step (Eq e1 e2) | isValue e1 && isValue e2 = if (e1 == e2) then 
+                                               BTrue 
+                                             else 
+                                               BFalse
+                | isValue e1 = Eq e1 (step e2)
+                | otherwise = Eq (step e1) e2
+step (If BTrue e1 e2) = e1 
+step (If BFalse e1 e2) = e2 
+step (If e e1 e2) = If (step e) e1 e2 
+step (App (Lam v t b) e) | isValue e = subst v e b 
+                         | otherwise = (App (Lam v t b) (step e))
+step (App e1 e2) = App (step e1) e2
+step (Tuple e1 e2) = Tuple (step e1) (step e2)  -- Passo para tuplas
+
+eval :: Expr -> Expr 
+eval e | isValue e = e 
+       | otherwise = eval (step e) 
