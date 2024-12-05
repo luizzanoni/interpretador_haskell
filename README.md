@@ -9,3 +9,6 @@ colocar de preferência nas variáveis do windows e NÃO do usuário
 
 `C:\ghcup\ghc\9.4.8\bin`
 
+use `ghc --make Main.hs -o lambda` para compilar o código no terminal do VSCode
+
+e para rodar e ver o resultado, use por exemplo: `Echo "1+1" | .\lambda.exe` ou `Echo "if true then 1 else 0" | .\lambda.exe`
