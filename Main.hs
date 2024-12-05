@@ -1,8 +1,9 @@
-module Main where 
+module Main where
 
-import Lexer 
+import Lexer
 import Parser
 import Interpreter
 import TypeChecker
 
+main :: IO ()
 main = getContents >>= print . eval . typecheck . parser . lexer
