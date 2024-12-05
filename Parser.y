@@ -5,7 +5,6 @@ import Lexer
 
 }
 
-
 %name parser
 %tokentype { Token }
 %error { parseError }
@@ -25,8 +24,7 @@ import Lexer
   ')'           { TokenRParen }
   ','           { TokenComma }
   '*'           { TokenMulti }
-  --  '\\'         { TokenLam }
-    -- var          { TokenVar $$ }
+  var           { TokenVar $$ }
 
 %nonassoc if then else 
 %left "=="
@@ -38,14 +36,17 @@ import Lexer
 Exp : true                        { BTrue }
     | false                       { BFalse }
     | num                         { Num $1 }
+    | var                         { Var $1 }  -- Adicionando regra para variáveis
     | Exp '+' Exp                 { Add $1 $3 }
     | Exp and Exp                 { And $1 $3 }
     | Exp "==" Exp                { Eq $1 $3 }
     | Exp '-' Exp                 { Sub $1 $3 }
     | if Exp then Exp else Exp    { If $2 $4 $6 }
-    | '(' Exp ',' Exp ')'         { Tuple $2 $4 }  -- Regra para tuplas
+    | '(' TupleExps ')'           { Tuple $2 }  -- Modificação para tuplas
     | Exp '*' Exp                 { Multi $1 $3 }
-    -- | Exp : TokenLam Var Ty Exp { Lam $2 $3 $4 }
+
+TupleExps : Exp                   { [$1] }
+          | Exp ',' TupleExps     { $1 : $3 }
 
 {
 parseError :: [Token] -> a 

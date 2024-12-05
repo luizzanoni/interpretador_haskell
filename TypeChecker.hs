@@ -17,7 +17,7 @@ typeof ctx (Add e1 e2) = case (typeof ctx e1, typeof ctx e2) of
                            (Just TNum, Just TNum) -> Just TNum
                            _ -> Nothing 
 typeof ctx (Sub e1 e2) = case (typeof ctx e1, typeof ctx e2) of 
-                           (Just TNum, Just TNum) -> Just TNum  -- Tipo para subtração
+                           (Just TNum, Just TNum) -> Just TNum
                            _ -> Nothing 
 typeof ctx (And e1 e2) = case (typeof ctx e1, typeof ctx e2) of 
                            (Just TBool, Just TBool) -> Just TBool
@@ -39,9 +39,14 @@ typeof ctx (App e1 e2) = case (typeof ctx e1, typeof ctx e2) of
                            (Just (TFun t11 t12), Just t2) | t11 == t2 -> Just t12 
                                                           | otherwise -> Nothing 
                            _ -> Nothing
-typeof ctx (Tuple e1 e2) = case (typeof ctx e1, typeof ctx e2) of  -- Tipo para tupla
-                             (Just t1, Just t2) -> Just (TTuple t1 t2)
-                             _ -> Nothing
+typeof ctx (Tuple es) = let ts = map (typeof ctx) es 
+                        in if all isJust ts then Just (TTuple (catMaybes ts)) else Nothing
+  where 
+    isJust (Just _) = True
+    isJust _ = False
+    catMaybes = map fromJust . filter isJust
+    fromJust (Just x) = x
+    fromJust _ = error "Unexpected Nothing"
 
 typecheck :: Expr -> Expr 
 typecheck e = case typeof [] e of 

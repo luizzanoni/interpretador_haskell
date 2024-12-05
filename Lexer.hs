@@ -2,36 +2,34 @@ module Lexer where
 
 import Data.Char
 
-
 -- Definição do tipo de expressão (Expr)
-data Expr = Num Int        -- Constantes numéricas
-          | BTrue          -- Valor booleano True
-          | BFalse         -- Valor booleano False
-          | Add Expr Expr  -- Adição
-          | Sub Expr Expr  -- Subtração
-          | And Expr Expr  -- Operação AND
-          | Eq Expr Expr   -- Comparação de igualdade
+data Expr = Num Int         -- Constantes numéricas
+          | BTrue           -- Valor booleano True
+          | BFalse          -- Valor booleano False
+          | Add Expr Expr   -- Adição
+          | Sub Expr Expr   -- Subtração
+          | And Expr Expr   -- Operação AND
+          | Eq Expr Expr    -- Comparação de igualdade
           | If Expr Expr Expr -- Condicional If
-          | Var String     -- Variáveis
+          | Var String      -- Variáveis
           | Lam String Ty Expr -- Função Lambda
-          | App Expr Expr  -- Aplicação de função
-          | Tuple Expr Expr -- Tuplas
-          | Multi Expr Expr
-          
+          | App Expr Expr   -- Aplicação de função
+          | Tuple [Expr]    -- Tuplas com múltiplas posições
+          | Multi Expr Expr 
           deriving (Show, Eq)
 
 -- Definição de tipos adicionais, como o tipo Ty
 data Ty = TNum 
         | TBool 
         | TFun Ty Ty 
-        | TTuple Ty Ty
+        | TTuple [Ty]        -- Tipo tupla com múltiplos tipos
         deriving (Show, Eq)
 
 data Token = TokenTrue
            | TokenFalse 
            | TokenNum Int 
            | TokenAdd 
-           | TokenSub          -- Adicionando o token de subtração
+           | TokenSub           -- Adicionando o token de subtração
            | TokenAnd 
            | TokenEq
            | TokenIf
@@ -40,10 +38,10 @@ data Token = TokenTrue
            | TokenVar String
            | TokenLam 
            | TokenArrow 
-           | TokenLParen       -- Parênteses para tuplas
+           | TokenLParen        -- Parênteses para tuplas
            | TokenRParen
            | TokenComma  
-           | TokenMulti      -- Vírgula para tuplas
+           | TokenMulti         -- Vírgula para tuplas
            deriving Show
 
 lexer :: String -> [Token]
@@ -74,4 +72,5 @@ lexerKW cs = case span isAlpha cs of
     ("if", rest) -> TokenIf : lexer rest
     ("then", rest) -> TokenThen : lexer rest
     ("else", rest) -> TokenElse : lexer rest
-    -- (var, rest) -> TokenVar var : lexer rest
+    (var, rest) -> TokenVar var : lexer rest -- Caso para variáveis
+
