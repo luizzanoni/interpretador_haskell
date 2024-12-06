@@ -73,4 +73,3 @@ lexerKW cs = case span isAlpha cs of
     ("then", rest) -> TokenThen : lexer rest
     ("else", rest) -> TokenElse : lexer rest
     (var, rest) -> TokenVar var : lexer rest -- Caso para variáveis
-
